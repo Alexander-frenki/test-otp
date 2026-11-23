@@ -3,15 +3,15 @@
 Merging into `main` needs an approval on the phone. The check `rekey/merge-approval`
 is required by a ruleset on `main`:
 
-1. Open a pull request. The check is pending: "Add the label rekey-approve…".
-2. Add the label **`rekey-approve`**. The workflow opens a ReKey authentication for
-   you on the deployed ReKey, with the pull request, its target branch and head commit
-   as the operation context.
-3. Open **ReKey Authenticator** on your phone: the request shows "Approve merge",
+1. Open a pull request, or push a new commit to one. The workflow opens a ReKey
+   authentication for you on the deployed ReKey, with the pull request, its target
+   branch and head commit as the operation context.
+2. Open **ReKey Authenticator** on your phone: the request shows "Approve merge",
    the repository, PR, branch and commit. Approve with Face ID and your PIN. The
    phone signs the request with the key it enrolled when it was linked.
-4. The check turns green and the pull request can be merged. A rejection or no answer
-   within 5 minutes turns it red. A new commit resets the check and drops the label.
+3. The check turns green and the pull request can be merged. A rejection or no answer
+   within 5 minutes turns it red; "Re-run jobs" on the check asks again. Every new
+   commit needs its own approval, and a newer push withdraws a request still waiting.
 
 ## Setup
 

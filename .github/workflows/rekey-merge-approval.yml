@@ -1,43 +1,29 @@
 name: ReKey merge approval
 
-# The required check is the commit status `rekey/merge-approval`, not a job:
-# runs for unrelated labels skip both jobs and leave the status untouched.
+# Every new head of a pull request asks the pusher's phone; the required check is
+# the commit status `rekey/merge-approval` that approve.sh sets on that head.
+# A missed or refused approval is asked again with "Re-run jobs".
 on:
   pull_request:
-    types: [opened, reopened, synchronize, labeled]
+    types: [opened, reopened, synchronize, ready_for_review]
 
 permissions:
   contents: read
   statuses: write
-  issues: write
+
+concurrency:
+  group: rekey-merge-approval-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
-  reset:
-    if: github.event.action != 'labeled'
-    name: Ask for approval
-    runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ github.token }}
-      REPO: ${{ github.repository }}
-      PR: ${{ github.event.pull_request.number }}
-      SHA: ${{ github.event.pull_request.head.sha }}
-    steps:
-      - name: Mark the new head as not approved
-        run: |
-          gh api -X POST "repos/$REPO/statuses/$SHA" \
-            -f state=pending -f context=rekey/merge-approval \
-            -f description="Add the label rekey-approve to approve this merge on your phone" >/dev/null
-          # A new commit needs a new approval: drop the label so adding it again asks the phone.
-          gh api -X DELETE "repos/$REPO/issues/$PR/labels/rekey-approve" >/dev/null 2>&1 || true
-
   approve:
-    if: github.event.action == 'labeled' && github.event.label.name == 'rekey-approve'
+    if: ${{ !github.event.pull_request.draft }}
     name: Approve on the phone
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
       - uses: actions/checkout@v4
-      - name: Ask the approver's ReKey device
+      - name: Ask the pusher's ReKey device
         run: .github/rekey/approve.sh
         env:
           GH_TOKEN: ${{ github.token }}
@@ -46,7 +32,7 @@ jobs:
           TITLE: ${{ github.event.pull_request.title }}
           BASE: ${{ github.event.pull_request.base.ref }}
           SHA: ${{ github.event.pull_request.head.sha }}
-          ACTOR: ${{ github.actor }}
+          ACTOR: ${{ github.triggering_actor }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           REKEY_URL: ${{ vars.REKEY_URL }}
           REKEY_APPLICATION_ID: ${{ vars.REKEY_APPLICATION_ID }}

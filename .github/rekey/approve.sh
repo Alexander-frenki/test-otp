@@ -54,6 +54,9 @@ payload="${response%$'\n'*}"
 [ "$code" = 201 ] || fail "ReKey refused the request (HTTP $code: $(jq -r '.error // "unknown"' <<<"$payload" 2>/dev/null || echo unknown))"
 request_id=$(jq -r '.request_id' <<<"$payload")
 
+# A newer push cancels this run: withdraw its request so the phone shows only the newest one.
+trap 'rekey DELETE "/api/authentications/$request_id" >/dev/null || true; exit 1' INT TERM
+
 status pending "Waiting for $user_id to approve on the phone"
 summary "⏳ Approval requested from **$user_id** (ReKey request \`$request_id\`). Open ReKey Authenticator on the phone."
 
