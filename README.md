@@ -3,9 +3,9 @@
 Merging into `main` needs an approval on the phone. The check `rekey/merge-approval`
 is required by a ruleset on `main`:
 
-1. Open a pull request, or push a new commit to one. The workflow opens a ReKey
-   authentication for you on the deployed ReKey, with the pull request, its target
-   branch and head commit as the operation context.
+1. Open a pull request, or push a new commit to one. The workflow asks rekey-backend,
+   which opens a ReKey authentication for you with the pull request, its target branch
+   and head commit as the operation context.
 2. Open **ReKey Authenticator** on your phone: the request shows "Approve merge",
    the repository, PR, branch and commit. Approve with Face ID and your PIN. The
    phone signs the request with the key it enrolled when it was linked.
@@ -15,9 +15,11 @@ is required by a ruleset on `main`:
 
 ## Setup
 
-- Secret `REKEY_API_KEY`: a server-channel API key of the ReKey project.
-- Variables: `REKEY_URL`, `REKEY_APPLICATION_ID`, `REKEY_FLOW_ID` (optional) and
-  `REKEY_APPROVERS`, a JSON map from GitHub login to the ReKey user and device:
-  `{"octocat": {"user_id": "…", "device_did": "did:jwk:…"}}`.
+- rekey-backend (the relying party) holds the ReKey API key, the linked phones and the flow:
+  - **GitHub page**: link each person's phone (enter the GitHub login, scan the QR with
+    ReKey Authenticator) and create an integration token for this repo.
+  - **Rules page**: pick the merge approval flow.
+- In this repo: variable `REKEY_BACKEND_URL` (the backend's base URL) and secret
+  `REKEY_BACKEND_TOKEN` (the integration token).
 - The workflow: [`.github/workflows/rekey-merge-approval.yml`](.github/workflows/rekey-merge-approval.yml),
   the script: [`.github/rekey/approve.sh`](.github/rekey/approve.sh).

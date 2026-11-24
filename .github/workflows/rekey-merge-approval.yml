@@ -23,7 +23,7 @@ jobs:
     timeout-minutes: 7
     steps:
       - uses: actions/checkout@v4
-      - name: Ask the pusher's ReKey device
+      - name: Ask the pusher's phone through rekey-backend
         run: .github/rekey/approve.sh
         env:
           GH_TOKEN: ${{ github.token }}
@@ -34,8 +34,5 @@ jobs:
           SHA: ${{ github.event.pull_request.head.sha }}
           ACTOR: ${{ github.triggering_actor }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          REKEY_URL: ${{ vars.REKEY_URL }}
-          REKEY_APPLICATION_ID: ${{ vars.REKEY_APPLICATION_ID }}
-          REKEY_FLOW_ID: ${{ vars.REKEY_FLOW_ID }}
-          REKEY_APPROVERS: ${{ vars.REKEY_APPROVERS }}
-          REKEY_API_KEY: ${{ secrets.REKEY_API_KEY }}
+          REKEY_BACKEND_URL: ${{ vars.REKEY_BACKEND_URL }}
+          REKEY_BACKEND_TOKEN: ${{ secrets.REKEY_BACKEND_TOKEN }}
